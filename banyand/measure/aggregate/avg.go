@@ -24,40 +24,44 @@ type Avg[A, B Input, R Output] struct {
 }
 
 // Combine takes elements to do the aggregation.
-// Avg uses type parameter A and B.
-func (a *Avg[A, B, R]) Combine(arguments Arguments[A, B]) error {
-	for _, arg0 := range arguments.arg0 {
-		switch arg0 := any(arg0).(type) {
-		case int64:
-			a.summation += R(arg0)
-		case float64:
-			a.summation += R(arg0)
-		default:
-			return errFieldValueType
-		}
+// Avg uses type parameter A.
+func (f *Avg[A, B, R]) Combine(arguments Arguments[A, B]) error {
+	i := 0
+	n := len(arguments.arg0)
+	// step-4 aggregate
+	for ; i <= n-4; i += 4 {
+		f.summation += R(arguments.arg0[i]) + R(arguments.arg0[i+1]) +
+			R(arguments.arg0[i+2]) + R(arguments.arg0[i+3])
+	}
+	// tail aggregate
+	for ; i < n; i++ {
+		f.summation += R(arguments.arg0[i])
 	}
 
-	for _, arg1 := range arguments.arg1 {
-		switch arg1 := any(arg1).(type) {
-		case int64:
-			a.count += arg1
-		default:
-			return errFieldValueType
-		}
+	i = 0
+	n = len(arguments.arg1)
+	// step-4 aggregate
+	for ; i <= n-4; i += 4 {
+		f.count += int64(arguments.arg1[i]) + int64(arguments.arg1[i+1]) +
+			int64(arguments.arg1[i+2]) + int64(arguments.arg1[i+3])
+	}
+	// tail aggregate
+	for ; i < n; i++ {
+		f.count += int64(arguments.arg1[i])
 	}
 
 	return nil
 }
 
 // Result gives the result for the aggregation.
-func (a *Avg[A, B, R]) Result() R {
-	// In unusual situations it returns the zero value.
-	if a.count == 0 {
-		return zeroValue[R]()
+func (f *Avg[A, B, R]) Result() (A, B, R) {
+	var average R
+	if f.count != 0 {
+		// According to the semantics of GoLang, the division of one int by another int
+		// returns an int, instead of f float.
+		average = f.summation / R(f.count)
 	}
-	// According to the semantics of GoLang, the division of one int by another int
-	// returns an int, instead of a float.
-	return a.summation / R(a.count)
+	return A(f.summation), B(f.count), average
 }
 
 // NewAvgArguments constructs arguments.

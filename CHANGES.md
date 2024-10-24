@@ -2,6 +2,24 @@
 
 Release Notes.
 
+## 0.8.0
+
+### Features
+
+- Add the `bydbctl analyze series` command to analyze the series data.
+
+### Bug Fixes
+
+- Fix the bug that TopN processing item leak. The item can not be updated but as a new item.
+
+### Documentation
+
+- Improve the description of the memory in observability doc.
+
+### Chores
+
+- Fix metrics system typo.
+
 ## 0.7.0
 
 ### File System Changes
@@ -26,6 +44,9 @@ Release Notes.
 - Add liaison, remote queue, storage(rotation), time-series tables, metadata cache and scheduler metrics.
 - Add HTTP health check endpoint for the data node.
 - Add slow query log for the distributed query and local query.
+- Support applying the index rule to the tag belonging to the entity.
+- Add search analyzer "url" which breaks test into tokens at any non-letter and non-digit character.
+- Introduce "match_option" to the "match" query.
 
 ### Bugs
 
@@ -43,6 +64,9 @@ Release Notes.
 - Fix panic when removing a expired segment.
 - Fix panic when reading a disorder block of measure. This block's versions are not sorted in descending order.
 - Fix the bug that the etcd client doesn't reconnect when facing the context timeout in the startup phase.
+- Fix the bug that the long running query doesn't stop when the context is canceled.
+- Fix the bug that merge block with different tags or fields.
+- Fix the bug that the pending measure block is not released when a full block is merged.
 
 ### Documentation
 

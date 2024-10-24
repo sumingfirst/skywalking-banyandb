@@ -19,6 +19,7 @@ package measure
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"time"
 
@@ -192,7 +193,7 @@ func (w *writeCallback) handle(dst map[string]*dataPointsInGroup, writeEvent *me
 	dpt.dataPoints.tagFamilies = append(dpt.dataPoints.tagFamilies, tagFamilies)
 
 	if stm.processorManager != nil {
-		stm.processorManager.onMeasureWrite(&measurev1.InternalWriteRequest{
+		stm.processorManager.onMeasureWrite(uint64(series.ID), &measurev1.InternalWriteRequest{
 			Request: &measurev1.WriteRequest{
 				Metadata:  stm.GetSchema().Metadata,
 				DataPoint: req.DataPoint,
@@ -237,7 +238,7 @@ func (w *writeCallback) newDpt(tsdb storage.TSDB[*tsTable, option], dpg *dataPoi
 	return dpt, nil
 }
 
-func (w *writeCallback) Rev(message bus.Message) (resp bus.Message) {
+func (w *writeCallback) Rev(_ context.Context, message bus.Message) (resp bus.Message) {
 	events, ok := message.Data().([]any)
 	if !ok {
 		w.l.Warn().Msg("invalid event data type")

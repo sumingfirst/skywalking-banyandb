@@ -24,27 +24,18 @@ type Min[A, B Input, R Output] struct {
 
 // Combine takes elements to do the aggregation.
 // Min uses type parameter A.
-func (m *Min[A, B, R]) Combine(arguments Arguments[A, B]) error {
+func (f *Min[A, B, R]) Combine(arguments Arguments[A, B]) error {
 	for _, arg0 := range arguments.arg0 {
-		switch arg0 := any(arg0).(type) {
-		case int64:
-			if R(arg0) < m.minimum {
-				m.minimum = R(arg0)
-			}
-		case float64:
-			if R(arg0) < m.minimum {
-				m.minimum = R(arg0)
-			}
-		default:
-			return errFieldValueType
+		if R(arg0) < f.minimum {
+			f.minimum = R(arg0)
 		}
 	}
 	return nil
 }
 
 // Result gives the result for the aggregation.
-func (m *Min[A, B, R]) Result() R {
-	return m.minimum
+func (f *Min[A, B, R]) Result() (A, B, R) {
+	return A(f.minimum), zeroValue[B](), f.minimum
 }
 
 // NewMinArguments constructs arguments.
